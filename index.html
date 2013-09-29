@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta http-equiv=Content-Type content="text/html;charset=UTF-8">
+        <title>BEM.Sugar</title>
+        <style>
+
+           html,body,.layout {
+              width: 100%;
+              height: 100%;
+              overflow: hidden;
+              font-family: Helvetica, Arial;
+              font-size: 12px;
+              padding: 0px;
+              margin: 0px;
+           }
+
+           .header {
+              position: absolute;
+              top: 0px;
+              width: 100%;
+              height: 70px;
+              background-color: #eee;
+              font-size: 18px;
+              font-weight: bold;
+              padding-top: 15px;
+           }
+
+           .header > * {
+              padding-left: 20px;
+           }
+
+           .content {
+               padding-top: 70px;
+               -moz-box-sizing: border-box;
+               box-sizing: border-box;
+               height: 100%;
+               overflow: hidden;
+           }
+
+           .source:first-child {
+               padding-right: 1px;
+           }
+
+           .source:last-child {
+               padding-left: 1px;
+           }
+
+           .source {
+               padding: 0px;
+               -moz-box-sizing: border-box;
+               box-sizing: border-box;
+               width: 50%;
+               height: 100%;
+               float: left;
+           }
+
+           .source > * {
+               width: 100%;
+               height: 100%;
+               padding: 0;
+               margin: 0;
+           }
+
+        </style>
+        <script src="traceur.js"></script>
+        <script src="mustache.js"></script>
+        <script>
+            var util = util || {};
+            util.inspect = function(o) {
+                return o;
+            }
+            util.inherits = function(ctor, superCtor) {
+                ctor.super_ = superCtor;
+                ctor.prototype = Object.create(superCtor.prototype, {
+                    constructor: {
+                        value: ctor,
+                        enumerable: false,
+                        writable: true,
+                        configurable: true
+                    }
+                });
+            };
+            var vm = vm || {};
+            vm.runInNewContext = eval;
+        </script>
+        <script src="src/class.js"></script>
+        <script src="src/compiler.js"></script>
+        <script src="beautify.js"></script>
+        <script src="http://ajaxorg.github.io/ace-builds/src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+        <script>
+            window.onload = function () {
+                var editor = ace.edit("editor");
+                editor.setTheme("ace/theme/monokai");
+                editor.getSession().setMode("ace/mode/javascript");
+
+                var editor2 = ace.edit("editor2");
+                editor2.setTheme("ace/theme/monokai");
+                editor2.getSession().setMode("ace/mode/javascript");
+                editor2.textInput.setReadOnly(true);
+
+                function compile() {
+                    var content = BNCompiler.compile('example.js',editor.getValue()),
+                        scrollTop = editor2.getSession().getScrollTop();
+                    if ( content === null ) {
+                        editor2.setValue(BNCompiler.getErrorSource() + '\n\n' + BNCompiler.getLastError());
+                    } else {
+                        editor2.setValue(js_beautify(content,{}));
+                    }
+                    editor2.getSession().setScrollTop(scrollTop);
+                }
+
+                editor.getSession().on('change', function(e) {
+                    compile();
+                });
+
+                compile();
+
+            }
+        </script>
+    </head>
+
+    <body>
+        <div class="layout">
+            <div class="header">
+               <div>BEM.Sugar</div>
+               <div style="font-size: 12px;"><a href="http://github.com/GREENpoint/bn/">http://github.com/GREENpoint/bn/</a></div>
+            </div>
+            <div class="content">
+
+                <div class="source">
+                    <pre id="editor">
+
+    // Сначала нужно рассказать,
+    // что данный контекст должен
+    // использовать BEM.Sugar.
+    "use bem";
+
+    // Простой синтаксис классов...
+    class SomeBasicClass {
+    }
+
+    // ...на самом деле все
+    // классы наследуются от BEM,
+    // что равносильно BEM.decl...
+    class SomeBasicClass extends BEM {
+    }
+
+    // ...но могут быть также быть
+    // классами представления DOM,
+    // что равносильно BEM.DOM.decl
+    class SomeViewClass extends BEM.DOM {
+    }
+
+    // Мы можем легко отнаследоваться
+    // от другого блока...
+    class SomeExtraClass extends SomeBasicClass {
+    }
+
+    // ...или более в терминах BEM
+    class SomeExtraClass extends BEM.blocks['some-basic-class'] {
+    }
+
+    // Семантичный синтаксис
+    // конструктора класса.
+    class SomeOtherClass {
+
+        constructor(data) {
+            this._someData = data;
+        }
+
+        myMethod(arg) {
+            this._n = 100 + 57;
+        }
+
+    }
+
+    // Выражения вызова родительского метода
+    class SomeNewOtherClass extends SomeOtherClass {
+
+        constructor(mods,params) {
+            super;
+            this._someData = [ 3, 4 ];
+        }
+
+        myMethod(arg) {
+            super(a);
+        }
+
+    }
+
+    // Модификаторы
+    class SomeNewOtherClass_someMode_withValue extends SomeOtherClass {
+
+    }
+
+    // Удобный синтаксис статических методов
+    class SomeStaticClass {
+        static makeEverybodyHappy() {
+            return 'hapiness';
+        }
+    }
+
+    // Модификаторы.
+    class SomeModClass {
+        set state(value) {
+            console.log('hi!');
+        }
+    }
+
+    // И еще...
+    class SomeClass {
+
+        eventsBinder () {
+            // Биндинг с сохранением контекста
+            this.elem('someElem').bind('click',() => {
+                this._onClick();
+            });
+        }
+
+        _onClick () {
+            // Строки-шаблоны
+            var myVar = 'String Templator';
+            console.log(`Say hello for ${myVar}!`);
+        }
+
+        // Параметры по-умолчанию
+        myMethod( someArgument = 'with default value' ) {
+        }
+
+        // Остаточные аргументы
+        myMethod2 ( arg1, ...otherArgs ) {
+           if ( otherArgs.length > 0 ) {
+               console.log('Spread!');
+           }
+        }
+
+        // Деструктивное присваивание
+        destructingAssigment() {
+            var [m, d, y] = [3, 14, 1977];
+            //var m = 3, d = 14, y = 1977;
+
+            // удобный обмен значениями
+            x = 3; y = 4; [x, y] = [y, x]
+            //temp = [y, x]; x = temp[0]; y = temp[1];
+        }
+
+        // Уже в вашей IDE!
+        getIDESupport() {
+            return [
+                'WebStorm 5+',
+                'Sublime 3+',
+                'Vim ?'
+            ];
+        }
+
+    }
+
+                    </pre>
+                </div>
+                <div class="source">
+                    <pre id="editor2">
+                    </pre>
+                </div>
+
+            </div>
+        </div>
+    </body>
+
+</html>
