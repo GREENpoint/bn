@@ -1,0 +1,11 @@
+{
+  "name": "bem-next",
+  "version": "0.1.0",
+  "description": "BEM with taste of future",
+  "dependencies": {
+    "commander": ">=2.0.0",
+    "mustache": ">=0.7.2",
+    "traceur": "https://github.com/google/traceur-compiler/tarball/master"
+  },
+  "bin": "./bn"
+}
